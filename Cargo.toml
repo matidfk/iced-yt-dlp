@@ -1,0 +1,19 @@
+[package]
+name = "iced-yt-dlp"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+dirs = "4.0.0"
+iced = { version = "*", features = ["image"] }
+iced_aw = { git = "https://github.com/iced-rs/iced_aw.git", features = ["tabs", "modal"] }
+notify-rust = "*"
+rfd = "0.10.0"
+
+[profile.dev.package.iced-yt-dlp]
+opt-level = 0 
+
+[profile.dev.package."*"]
+opt-level = 3
