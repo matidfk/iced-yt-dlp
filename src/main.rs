@@ -1,4 +1,5 @@
 #![feature(fn_traits)]
+#![windows_subsystem = "windows"]
 
 use dirs::{download_dir, home_dir};
 use iced::{
