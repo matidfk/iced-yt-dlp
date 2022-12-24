@@ -1,4 +1,4 @@
-#![feature(fn_traits)]
+// disable terminal on windows
 #![windows_subsystem = "windows"]
 
 use dirs::{download_dir, home_dir};
@@ -70,7 +70,7 @@ pub enum Message {
     DownloadPathChanged(String),
     TimestampStartChanged(String),
     TimestampEndChanged(String),
-    PickFolder,
+    Browse,
     StartDownload,
 }
 
@@ -122,9 +122,9 @@ impl Application for App {
                 });
 
                 // time range
-                if self.timestamp_start != "0:00" && self.timestamp_end != "inf" {
+                if self.timestamp_start != "0:00" || self.timestamp_end != "inf" {
                     let start = if self.timestamp_start.is_empty() {
-                        "0:00".to_string()
+                        "*0:00".to_string()
                     } else {
                         format!("*{}", self.timestamp_start)
                     };
@@ -132,10 +132,11 @@ impl Application for App {
                     let end = if self.timestamp_end.is_empty() {
                         "inf".to_string()
                     } else {
-                        format!("{}", self.timestamp_start)
+                        format!("{}", self.timestamp_end)
                     };
 
                     command.args(["--download-sections", &format!("{}-{}", start, end)]);
+                    dbg!(["--download-sections", &format!("{}-{}", start, end)]);
                 }
 
                 notify_rust::Notification::new()
@@ -155,7 +156,7 @@ impl Application for App {
                     .unwrap();
             }
             Message::DownloadPathChanged(v) => self.download_path = v,
-            Message::PickFolder => {
+            Message::Browse => {
                 let folder = rfd::FileDialog::new()
                     .set_directory(self.download_path.clone())
                     .pick_folder();
@@ -177,7 +178,7 @@ impl Application for App {
                 &self.download_path,
                 Message::DownloadPathChanged
             ),
-            button("Choose").on_press(Message::PickFolder)
+            button("Browse").on_press(Message::Browse)
         ]
         .spacing(10)
         .width(Length::Fill);
@@ -248,7 +249,7 @@ pub type Element<'a> = iced::Element<'a, Message, Renderer>;
 pub fn multi_toggle<'a, T: ToString + PartialEq>(
     options: Vec<T>,
     selected: T,
-    message: impl Fn(&T) -> Message,
+    on_change: fn(&T) -> Message,
 ) -> Element<'a> {
     options
         .iter()
@@ -264,7 +265,7 @@ pub fn multi_toggle<'a, T: ToString + PartialEq>(
                     Button::Destructive
                 })
                 .width(Length::Fill)
-                .on_press(message.call((option,)));
+                .on_press(on_change(option));
 
             row.push(button)
         })
