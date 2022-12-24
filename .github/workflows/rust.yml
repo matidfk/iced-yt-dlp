@@ -1,4 +1,4 @@
-name: Rust
+name: Release
 
 on:
   push:
@@ -10,13 +10,21 @@ env:
   CARGO_TERM_COLOR: always
 
 jobs:
-  build:
+  release:
 
     runs-on: ubuntu-latest
 
     steps:
     - uses: actions/checkout@v3
     - name: Build
-      run: cargo build --verbose
-    - name: Run tests
-      run: cargo test --verbose
+      run: cargo build --release
+      
+    - name: Release
+    - uses: "marvinpinto/action-automatic-releases@latest"
+      with:
+        repo_token: "${{ secrets.GITHUB_TOKEN }}"
+        automatic_release_tag: "latest"
+        prerelease: false
+        title: "Release"
+        files: |
+          target/release/iced-yt-dlp
